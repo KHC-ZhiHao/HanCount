@@ -5,7 +5,7 @@
 
 const fs = require('fs')
 const env = require('./env')
-const reg = /韓國|韓總|國瑜|國語|韓市長|高雄市長|挺韓|寒流|韓流|韓|函|涵/g
+const reg = /國瑜|國語|高雄市長|寒|韓|函|涵/g
 
 // ==========================
 //
