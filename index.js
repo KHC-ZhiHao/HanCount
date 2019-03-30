@@ -13,6 +13,7 @@ const reg = /國瑜|國語|高雄市長|寒|韓|函|涵/g
 //
 
 const ip = env.ip === 'auto' ? require('ip').address() : env.ip
+const publicIp = env.publicIp ? env.publicIp : null
 const http = require('http')
 const express = require('express')
 const app = express()
@@ -23,7 +24,7 @@ server.listen(80, ip)
 
 app.get('/', ( request, response )=>{
     let html = fs.readFileSync('./index.html', 'utf8')
-    html = html.replace('--ip--', ip).replace('--begin--', env.startTime)
+    html = html.replace('--ip--', publicIp || ip).replace('--begin--', env.startTime)
     response.write(html)
     response.end()
 })
@@ -51,23 +52,27 @@ const ytdlOption = {
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path)
 
-let recoreFile = './files/minute.json'
-let recore = require(recoreFile)
+let recoreFile = 'minute.json'
+let audioFile = 'audios'
+if (fs.existsSync(recoreFile) === false) {
+    fs.writeFileSync(recoreFile, JSON.stringify({text: '', count: 0 }))
+}
+
+if (fs.existsSync(audioFile) === false) {
+    fs.mkdirSync(audioFile)
+}
+
+let recore = require('./' + recoreFile)
 let count = recore.count || 0
 let oldBase = null
-
-try {
-    fs.mkdirSync('./audios')
-} catch(e) {}
-
-let files = fs.readdirSync('./audios')
+let files = fs.readdirSync(audioFile)
 
 for (let file of files) {
-    fs.unlinkSync('./audios/' + file)
+    fs.unlinkSync('./' + audioFile + '/' + file)
 }
 
 function action() {
-    let fileName = `./audios/${Date.now()}.wav`
+    let fileName = `./${audioFile}/${Date.now()}.wav`
     let stream = ytdl(url, ytdlOption)
     new ffmpeg(stream).duration(10).audioChannels(1).audioFrequency(8000).format('wav').save(fileName).on('end', () => {
         stream.end()
