@@ -19,7 +19,7 @@ const app = express()
 const server = http.createServer(app)
 const io = require('socket.io')(server)
 
-server.listen(3000, ip)
+server.listen(80, ip)
 
 app.get('/', ( request, response )=>{
     let html = fs.readFileSync('./index.html', 'utf8')
@@ -32,7 +32,7 @@ io.on('connection', (socket)=>{
     socket.emit('update', { text: 'wait...', count })
 })
 
-console.log(`< http://${ip}:3000 >`)
+console.log(`< http://${ip} >`)
 
 // ==========================
 //
