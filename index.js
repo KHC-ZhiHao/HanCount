@@ -12,14 +12,14 @@ const reg = /韓國|韓總|國瑜|國語|韓市長|高雄市長|挺韓|寒流|�
 // server
 //
 
-const ip = require('ip').address()
+const ip = env.ip === 'auto' ? require('ip').address() : env.ip
 const http = require('http')
 const express = require('express')
 const app = express()
 const server = http.createServer(app)
 const io = require('socket.io')(server)
 
-server.listen(80, env.ip === 'auto' ? ip : env.ip)
+server.listen(3000, ip)
 
 app.get('/', ( request, response )=>{
     let html = fs.readFileSync('./index.html', 'utf8')
@@ -32,7 +32,7 @@ io.on('connection', (socket)=>{
     socket.emit('update', { text: 'wait...', count })
 })
 
-console.log(`< http://${ip} >`)
+console.log(`< http://${ip}:3000 >`)
 
 // ==========================
 //
@@ -98,9 +98,7 @@ function action() {
                 console.log('計數 : ', count)
                 io.emit('update', { text, count })
                 fs.writeFileSync(recoreFile, JSON.stringify({ text, count }))
-            } catch(e) {
-                console.log(e.message)
-            }
+            } catch(e) {}
             fs.unlinkSync(fileName)
         })
     })
