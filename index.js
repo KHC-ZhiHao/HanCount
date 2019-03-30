@@ -33,7 +33,7 @@ io.on('connection', (socket)=>{
     socket.emit('update', { text: '即時字幕載入中...', count })
 })
 
-console.log(`< http://${ip} >`)
+console.log(`< http://${publicIp || ip} >`)
 
 // ==========================
 //
