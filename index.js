@@ -23,13 +23,13 @@ server.listen(80, ip)
 
 app.get('/', ( request, response )=>{
     let html = fs.readFileSync('./index.html', 'utf8')
-    html = html.replace('--ip--', ip).replace('--keyword--', reg).replace('--begin--', env.startTime)
+    html = html.replace('--ip--', ip).replace('--begin--', env.startTime)
     response.write(html)
     response.end()
 })
 
 io.on('connection', (socket)=>{
-    socket.emit('update', { text: 'wait...', count })
+    socket.emit('update', { text: '即時字幕載入中...', count })
 })
 
 console.log(`< http://${ip} >`)
