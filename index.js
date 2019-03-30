@@ -56,8 +56,18 @@ let recore = require(recoreFile)
 let count = recore.count || 0
 let oldBase = null
 
+try {
+    fs.mkdirSync('./audios')
+} catch(e) {}
+
+let files = fs.readdirSync('./audios')
+
+for (let file of files) {
+    fs.unlinkSync('./audios/' + file)
+}
+
 function action() {
-    let fileName = `./files/${Date.now()}.wav`
+    let fileName = `./audios/${Date.now()}.wav`
     let stream = ytdl(url, ytdlOption)
     new ffmpeg(stream).duration(10).audioChannels(1).audioFrequency(8000).format('wav').save(fileName).on('end', () => {
         stream.end()
