@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>HanCount 韓計數器</title>
+	<meta charset=utf-8>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+	<div id="title">某新聞台提到有關韓的次數為</div>
+	<div id="count">0</div>
+	<div id="message">Wait...</div>
+	<div id="support">
+		<div>即時語音解讀reg : --keyword--</div>
+		<div>紀錄起點 : --begin--</div>
+	</div>
+</body>
+
+<style>
+	body {
+		background-color: #333;
+		color: #FFF;
+		padding-top: 3em;
+		text-align: center
+	}
+	#title {
+		padding-bottom: 30px;
+	}
+	#count {
+		font-size: 5em;
+		padding-bottom: 30px;
+	}
+	#support {
+		color: #AAA;
+		padding-top: 1em;
+		font-size: 0.8em;
+	}
+
+	#support div {
+		padding-bottom: 7px;
+	}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+
+<script>
+	var ip = '--ip--'
+	var socket = io('http://' + ip)
+	var elCount = document.getElementById('count')
+	var elMessage = document.getElementById('message')
+    socket.on('update', (data)=>{
+		elCount.innerHTML = data.count
+		elMessage.innerHTML = data.text
+    })
+</script>
+
+</html>
