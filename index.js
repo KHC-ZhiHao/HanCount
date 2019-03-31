@@ -5,7 +5,7 @@
 
 const fs = require('fs')
 const env = require('./env')
-const reg = /韓國|國瑜|國語|寒|韓|函|涵/g
+const reg = new RegExp(env.keywords, 'g')
 
 // ==========================
 //
@@ -23,7 +23,7 @@ const io = require('socket.io')(server)
 server.listen(80, ip)
 
 app.use(express.static('./public'));
-app.get('/', ( request, response )=>{
+app.get('/', (request, response)=>{
     let html = fs.readFileSync('./index.html', 'utf8')
     html = html.replace('--ip--', publicIp || ip).replace('--begin--', env.startTime)
     response.write(html)
@@ -55,6 +55,7 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path)
 
 let recoreFile = 'minute.json'
 let audioFile = 'audios'
+
 if (fs.existsSync(recoreFile) === false) {
     fs.writeFileSync(recoreFile, JSON.stringify({text: '', count: 0 }))
 }
