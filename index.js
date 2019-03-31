@@ -74,11 +74,13 @@ for (let file of files) {
 }
 
 function action() {
-    let fileName = `./${audioFile}/${Date.now()}.wav`
+    let now = Date.now()
+    let fileName = `./${audioFile}/${now}.wav`
     let stream = ytdl(url, ytdlOption)
     new ffmpeg(stream).duration(10).audioChannels(1).audioFrequency(16000).format('wav').save(fileName).on('end', () => {
         stream.end()
-        let base = fs.readFileSync(fileName).toString('base64')
+        let buffer = fs.readFileSync(fileName)
+        let base = buffer.toString('base64')
         if (oldBase === base) return
         oldBase = base
         request({
@@ -101,10 +103,11 @@ function action() {
                 if (match) {
                     count += match.length
                 }
+                let output = { text, count }
                 console.log('語音 : ', text)
                 console.log('計數 : ', count)
-                io.emit('update', { text, count })
-                fs.writeFileSync(recoreFile, JSON.stringify({ text, count }))
+                io.emit('update', output)
+                fs.writeFileSync(recoreFile, JSON.stringify(output))
             } catch(e) {}
             fs.unlinkSync(fileName)
         })
