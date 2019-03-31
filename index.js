@@ -5,7 +5,7 @@
 
 const fs = require('fs')
 const env = require('./env')
-const reg = /國瑜|國語|高雄市長|寒|韓|函|涵/g
+const reg = /韓國|國瑜|國語|寒|韓|函|涵/g
 
 // ==========================
 //
@@ -22,6 +22,7 @@ const io = require('socket.io')(server)
 
 server.listen(80, ip)
 
+app.use(express.static('./public'));
 app.get('/', ( request, response )=>{
     let html = fs.readFileSync('./index.html', 'utf8')
     html = html.replace('--ip--', publicIp || ip).replace('--begin--', env.startTime)
@@ -44,8 +45,8 @@ const url = env.youtubeUrl
 const apiKey = env.apiKey
 const ytdl = require('ytdl-core')
 const request = require('request')
-const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg')
 const ffmpeg = require('fluent-ffmpeg')
+const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg')
 const ytdlOption = {
     liveBuffer: 10000
 }
@@ -74,7 +75,7 @@ for (let file of files) {
 function action() {
     let fileName = `./${audioFile}/${Date.now()}.wav`
     let stream = ytdl(url, ytdlOption)
-    new ffmpeg(stream).duration(10).audioChannels(1).audioFrequency(8000).format('wav').save(fileName).on('end', () => {
+    new ffmpeg(stream).duration(10).audioChannels(1).audioFrequency(16000).format('wav').save(fileName).on('end', () => {
         stream.end()
         let base = fs.readFileSync(fileName).toString('base64')
         if (oldBase === base) return
@@ -88,9 +89,9 @@ function action() {
                 },
                 config: {
                     encoding: 'LINEAR16',
-                    sampleRateHertz: 8000,
-                    languageCode: 'zh-TW',
-                },
+                    sampleRateHertz: 16000,
+                    languageCode: 'zh-TW'
+                }
             }
         }, (error, response, body) => {
             try{

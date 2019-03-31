@@ -5,6 +5,8 @@
     <title>韓總計數器</title>
     <meta charset=utf-8>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="./icon.png" />
+    <link rel="shortcut icon" type="image/png" href="./icon.png" />
 </head>
 
 <body>
@@ -54,7 +56,7 @@
 
     #footer {
         padding: 10px 10px;
-        position: absolute;
+        position: fixed;
         bottom: 0px;
         text-align: right;
         right: 0px;
@@ -83,13 +85,13 @@
     var messages = []
     function pushMessage(text) {
         let html = ''
-        let date = (new Date()).toISOString()
-        if (messages.length >= 5) {
+        let date = new Date()
+        if (messages.length >= 4) {
             messages.shift()
         }
         messages.push(text)
         for (let message of messages) {
-            html += `<div>${date}<br>${message}</div>`
+            html = `<div>${date}<br>${message}</div>` + html
         }
         elMessages.innerHTML = html
     }
