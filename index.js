@@ -4,23 +4,24 @@
 //
 
 const fs = require('fs')
-const env = require('./env')
-const reg = new RegExp(env.keywords, 'g')
+const qs = require('qs')
+const env = process.env
+const reg = new RegExp(env.KEYWORDS, 'g')
 
 let audioFile = 'audios'
 let recoreFile = 'minute.json'
 let backupFile = 'files'
 
 if (fs.existsSync(recoreFile) === false) {
-    fs.writeFileSync(recoreFile, JSON.stringify({text: '', count: 0 }))
+  fs.writeFileSync(recoreFile, JSON.stringify({ text: '', count: 0 }))
 }
 
 if (fs.existsSync(audioFile) === false) {
-    fs.mkdirSync(audioFile)
+  fs.mkdirSync(audioFile)
 }
 
 if (fs.existsSync(backupFile) === false) {
-    fs.mkdirSync(backupFile)
+  fs.mkdirSync(backupFile)
 }
 
 let recore = require('./' + recoreFile)
@@ -32,45 +33,47 @@ let reads = recore.reads || 0
 //
 // server
 //
-
-const ip = env.ip === 'auto' ? require('ip').address() : env.ip
+// const ip = env.ip === 'auto' ? require('ip').address() : env.ip
 const publicIp = env.publicIp ? env.publicIp : null
 const http = require('http')
 const express = require('express')
 const app = express()
 const server = http.createServer(app)
 const io = require('socket.io')(server)
+const PORT = env.PORT || 3000
+server.listen(PORT)
 
-server.listen(80, ip)
+const startTime = new Date()
+app.use(express.static('./public'))
+app.set('view engine', 'pug')
 
-app.use(express.static('./public'));
-app.get('/', (request, response)=>{
-    let html = fs.readFileSync('./index.html', 'utf8')
-    html = html.replace('--ip--', publicIp || ip).replace('--begin--', env.startTime)
-    response.write(html)
-    response.end()
+// index page
+app.get('/', (request, res) => {
+  res.render('index', {
+    startTime, publicIp, YOUTUBE_VIDEO_ID
+  })
 })
 
-io.on('connection', (socket)=>{
-    views += 1
-    socket.emit('update', { text: '即時字幕載入中...', count })
+io.on('connection', (socket) => {
+  views += 1
+  socket.emit('update', { text: '即時字幕載入中...', count })
 })
 
-console.log(`< http://${publicIp || ip} >`)
+// console.log(`< http://${publicIp || ip}:${PORT} >`)
+
+console.log(`< http://localhost:${PORT} >`)
 
 // ==========================
 //
 // main
 //
-
-const url = env.youtubeUrl
-const apiKey = env.apiKey
+const { YOUTUBE_VIDEO_ID, API_KEY } = env
 const ytdl = require('ytdl-core')
 const request = require('request')
 const ffmpeg = require('fluent-ffmpeg')
 const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg')
 const ytdlOption = {
-    liveBuffer: 10000
+  liveBuffer: 10000
 }
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path)
@@ -80,53 +83,53 @@ let oldBase = null
 let files = fs.readdirSync(audioFile)
 
 for (let file of files) {
-    fs.unlinkSync('./' + audioFile + '/' + file)
+  fs.unlinkSync('./' + audioFile + '/' + file)
 }
 
 function action() {
-    let now = Date.now()
-    let fileName = `./${audioFile}/${now}.wav`
-    let stream = ytdl(url, ytdlOption)
-    new ffmpeg(stream).duration(10).audioChannels(1).audioFrequency(16000).format('wav').save(fileName).on('end', () => {
-        stream.end()
-        let buffer = fs.readFileSync(fileName)
-        let base = buffer.toString('base64')
-        if (oldBase === base) return
-        oldBase = base
-        request({
-            uri: 'https://speech.googleapis.com/v1/speech:recognize?key=' + apiKey,
-            method: 'POST',
-            json: {
-                audio: {
-                    content: base
-                },
-                config: {
-                    encoding: 'LINEAR16',
-                    sampleRateHertz: 16000,
-                    languageCode: 'zh-TW'
-                }
-            }
-        }, (error, response, body) => {
-            try{
-                let text = body.results[0].alternatives[0].transcript
-                let match = text.match(reg)
-                if (match) {
-                    count += match.length
-                }
-                let output = { text, count, views, reads }
-                console.log('語音 : ', text)
-                console.log('計數 : ', count)
-                reads += 1
-                io.emit('update', output)
-                fs.writeFileSync(recoreFile, JSON.stringify({ output }))
-                if (now - oldNow > 1800000) {
-                    oldNow = now
-                    fs.writeFileSync(`./${backupFile}/${now}.json`, JSON.stringify({ output }))
-                }
-            } catch(e) {}
-            fs.unlinkSync(fileName)
-        })
+  let now = Date.now()
+  let fileName = `./${audioFile}/${now}.wav`
+  let stream = ytdl(`https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_ID}`, ytdlOption)
+  new ffmpeg(stream).duration(10).audioChannels(1).audioFrequency(16000).format('wav').save(fileName).on('end', () => {
+    stream.end()
+    let buffer = fs.readFileSync(fileName)
+    let base = buffer.toString('base64')
+    if (oldBase === base) return
+    oldBase = base
+    request({
+      uri: 'https://speech.googleapis.com/v1/speech:recognize?key=' + API_KEY,
+      method: 'POST',
+      json: {
+        audio: {
+          content: base
+        },
+        config: {
+          encoding: 'LINEAR16',
+          sampleRateHertz: 16000,
+          languageCode: 'zh-TW'
+        }
+      }
+    }, (error, response, body) => {
+      try {
+        let text = body.results[0].alternatives[0].transcript
+        let match = text.match(reg)
+        if (match) {
+          count += match.length
+        }
+        let output = { text, count, views, reads }
+        console.log('語音 : ', text)
+        console.log('計數 : ', count)
+        reads += 1
+        io.emit('update', output)
+        fs.writeFileSync(recoreFile, JSON.stringify({ output }))
+        if (now - oldNow > 1800000) {
+          oldNow = now
+          fs.writeFileSync(`./${backupFile}/${now}.json`, JSON.stringify({ output }))
+        }
+      } catch (e) { }
+      fs.unlinkSync(fileName)
     })
+  })
 }
 
 setInterval(action, 10000)

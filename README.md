@@ -8,13 +8,13 @@
 
 1. clone專案
 
-2. 把 `_env.js` 更改成 `env.js`。
+2. 把 `.envrc-sample` 更改成 `.envrc`。
 
-3. 更改`env.js`設定
+3. 更改`.envrc`設定
 
-4. 開啟終端機，輸入 `npm install`
+4. 開啟終端機，輸入 `yarn install`
 
-5. 運行 `node .`，如果執行失敗再`npm install`一次。
+5. 運行 `yarn dev`
 
 6. 點擊log網址開啟網站。
 

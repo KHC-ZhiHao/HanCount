@@ -3,13 +3,21 @@
 	"version": "1.0.0",
 	"main": "index.js",
 	"license": "ISC",
+	"scripts": {
+		"start": "node index.js",
+		"dev": "nodemon index.js -e js"
+	},
 	"dependencies": {
 		"@ffmpeg-installer/ffmpeg": "^1.0.17",
 		"express": "^4.16.4",
 		"fluent-ffmpeg": "^2.1.2",
 		"ip": "^1.1.5",
+		"pug": "^2.0.3",
 		"request": "^2.88.0",
 		"socket.io": "^2.2.0",
 		"ytdl-core": "^0.29.1"
+	},
+	"devDependencies": {
+		"nodemon": "^1.18.10"
 	}
 }

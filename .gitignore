@@ -2,3 +2,5 @@ node_modules
 env.js
 minute.json
 files
+audios
+.envrc
