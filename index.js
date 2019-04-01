@@ -4,7 +4,8 @@
 //
 
 const fs = require('fs')
-const qs = require('qs')
+const moment = require('moment')
+moment.locale('zh-tw');
 const env = process.env
 const reg = new RegExp(env.KEYWORDS, 'g')
 
@@ -43,7 +44,7 @@ const io = require('socket.io')(server)
 const PORT = env.PORT || 3000
 server.listen(PORT)
 
-const startTime = new Date()
+const startTime = moment().format('LLL')
 app.use(express.static('./public'))
 app.set('view engine', 'pug')
 
@@ -56,7 +57,8 @@ app.get('/', (request, res) => {
 
 io.on('connection', (socket) => {
   views += 1
-  socket.emit('update', { text: '即時字幕載入中...', count })
+  let date = moment().format('LLL')
+  socket.emit('update', { text: '即時字幕載入中...', count, date })
 })
 
 // console.log(`< http://${publicIp || ip}:${PORT} >`)
@@ -116,9 +118,9 @@ function action() {
         if (match) {
           count += match.length
         }
-        let output = { text, count, views, reads }
-        console.log('語音 : ', text)
-        console.log('計數 : ', count)
+        let date = moment().format('LLL')
+        let output = { text, count, views, reads, date }
+        console.log(date, '計數 :', count, text)
         reads += 1
         io.emit('update', output)
         fs.writeFileSync(recoreFile, JSON.stringify({ output }))
@@ -126,10 +128,16 @@ function action() {
           oldNow = now
           fs.writeFileSync(`./${backupFile}/${now}.json`, JSON.stringify({ output }))
         }
-      } catch (e) { }
+      } catch (e) {
+        // console.error(e)
+      }
       fs.unlinkSync(fileName)
+
+      setTimeout(action, 10000)
     })
   })
 }
 
-setInterval(action, 10000)
+action()
+
+// setInterval(action, 10000)

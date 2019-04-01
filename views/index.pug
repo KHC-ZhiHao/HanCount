@@ -7,12 +7,12 @@ html
     link(rel='icon', type='image/png', href='./icon.png')
     link(rel='shortcut icon', type='image/png', href='./icon.png')
   body
-    h1#title Hant Counter
+    h1#title CTI Hant Counter
     iframe(width='560', height='315', src=`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}`, frameborder='0', allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture', allowfullscreen='')
     #count 0
     #message 連線中
     #support
-      #messages
+      ul#messages
     #footer
       a(href='https://github.com/KHC-ZhiHao/HanCount', target='_blank')
         svg(height='32', viewBox='0 0 16 16', version='1.1', width='32', aria-hidden='true')
@@ -41,6 +41,15 @@ html
       #support div {
       padding-bottom: 7px;
       }
+      #messages{
+        text-align: left;
+      }
+      #messages li {
+        list-style: none;
+      }
+      #messages li:first-child {
+        display: none;
+      }
       #footer {
       padding: 10px 10px;
       position: fixed;
@@ -59,22 +68,12 @@ html
       var socket = io('/')
       var elCount = document.getElementById('count')
       var elMessage = document.getElementById('message')
-      socket.on('update', (data) => {
-      elCount.innerHTML = data.count
-      elMessage.innerHTML = data.text
-      pushMessage(data.text)
-      })
       var elMessages = document.getElementById('messages')
-      var messages = []
-      function pushMessage(text) {
-      let html = ''
-      let date = new Date()
-      if (messages.length >= 4) {
-      messages.shift()
-      }
-      messages.push(text)
-      for (let message of messages) {
-      html = `<div>${date}<br>${message}</div>` + html
-      }
-      elMessages.innerHTML = html
-      }
+      socket.on('update', (data) => {
+        elCount.innerHTML = data.count
+        elMessage.innerHTML = data.text
+        //- pushMessage(data)
+        let li = document.createElement('li')
+        li.innerText = `${data.date}: ${data.text}`
+        elMessages.prepend(li)
+      })
