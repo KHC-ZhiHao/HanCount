@@ -7,6 +7,27 @@ const fs = require('fs')
 const env = require('./env')
 const reg = new RegExp(env.keywords, 'g')
 
+let audioFile = 'audios'
+let recoreFile = 'minute.json'
+let backupFile = 'files'
+
+if (fs.existsSync(recoreFile) === false) {
+    fs.writeFileSync(recoreFile, JSON.stringify({text: '', count: 0 }))
+}
+
+if (fs.existsSync(audioFile) === false) {
+    fs.mkdirSync(audioFile)
+}
+
+if (fs.existsSync(backupFile) === false) {
+    fs.mkdirSync(backupFile)
+}
+
+let recore = require('./' + recoreFile)
+let count = recore.count || 0
+let views = recore.views || 0
+let reads = recore.reads || 0
+
 // ==========================
 //
 // server
@@ -31,6 +52,7 @@ app.get('/', (request, response)=>{
 })
 
 io.on('connection', (socket)=>{
+    views += 1
     socket.emit('update', { text: '即時字幕載入中...', count })
 })
 
@@ -53,19 +75,7 @@ const ytdlOption = {
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path)
 
-let recoreFile = 'minute.json'
-let audioFile = 'audios'
-
-if (fs.existsSync(recoreFile) === false) {
-    fs.writeFileSync(recoreFile, JSON.stringify({text: '', count: 0 }))
-}
-
-if (fs.existsSync(audioFile) === false) {
-    fs.mkdirSync(audioFile)
-}
-
-let recore = require('./' + recoreFile)
-let count = recore.count || 0
+let oldNow = Date.now()
 let oldBase = null
 let files = fs.readdirSync(audioFile)
 
@@ -103,11 +113,16 @@ function action() {
                 if (match) {
                     count += match.length
                 }
-                let output = { text, count }
+                let output = { text, count, views, reads }
                 console.log('語音 : ', text)
                 console.log('計數 : ', count)
+                reads += 1
                 io.emit('update', output)
-                fs.writeFileSync(recoreFile, JSON.stringify(output))
+                fs.writeFileSync(recoreFile, JSON.stringify({ output }))
+                if (now - oldNow > 1800000) {
+                    oldNow = now
+                    fs.writeFileSync(`./${backupFile}/${now}.json`, JSON.stringify({ output }))
+                }
             } catch(e) {}
             fs.unlinkSync(fileName)
         })
