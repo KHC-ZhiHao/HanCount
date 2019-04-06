@@ -10,6 +10,11 @@
 		"ip": "^1.1.5",
 		"request": "^2.88.0",
 		"socket.io": "^2.2.0",
-		"ytdl-core": "^0.29.1"
+		"ytdl-core": "^0.29.1",
+		"bufferhelper": ">=0.2.1",
+		"iconv-lite": ">=0.4.13",
+		"md5": ">=2.2.1",
+		"urlencode": ">=1.1.0",
+		"delayed": ">=1.0.1"
 	}
 }
